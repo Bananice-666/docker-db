@@ -1,7 +1,8 @@
-version: '3.8'
-
 services:
 
+  # =========================
+  # TU BASE DE DATOS (APP)
+  # =========================
   db:
     image: postgres:18
     container_name: postgres_db
@@ -17,8 +18,67 @@ services:
       - "5432:5432"
 
     volumes:
-      - postgres_data:/var/lib/postgresql
+      - postgres_data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
 
+    networks:
+      - app_network
+
+  # =========================
+  # PASSBOLT DATABASE
+  # =========================
+  passbolt_db:
+    image: postgres:18
+    container_name: passbolt_db
+
+    restart: always
+
+    environment:
+      POSTGRES_USER: passbolt
+      POSTGRES_PASSWORD: passboltpass
+      POSTGRES_DB: passbolt
+
+    volumes:
+      - passbolt_data:/var/lib/postgresql/data
+
+    networks:
+      - app_network
+
+  # =========================
+  # PASSBOLT APP
+  # =========================
+  passbolt:
+    image: passbolt/passbolt:latest-ce
+    container_name: passbolt_app
+
+    restart: always
+
+    depends_on:
+      - passbolt_db
+
+    ports:
+      - "8080:80"
+
+    environment:
+      APP_FULL_BASE_URL: http://localhost:8080
+
+      DATASOURCES_DEFAULT_HOST: passbolt_db
+      DATASOURCES_DEFAULT_USERNAME: passbolt
+      DATASOURCES_DEFAULT_PASSWORD: passboltpass
+      DATASOURCES_DEFAULT_DATABASE: passbolt
+
+    networks:
+      - app_network
+
+# =========================
+# VOLUMES
+# =========================
 volumes:
   postgres_data:
+  passbolt_data:
+
+# =========================
+# NETWORK
+# =========================
+networks:
+  app_network:
