@@ -1,9 +1,12 @@
+version: "3.8"
+
 services:
+
   # =========================
-  # BASE DE DATOS APP
+  # (POSTGRESQL)
   # =========================
   db:
-    image: postgres:18
+    image: postgres:16
     container_name: postgres_db
     restart: always
 
@@ -24,20 +27,21 @@ services:
 
 
   # =========================
-  # PASSBOLT DATABASE
+  # PASSBOLT DATABASE (MYSQL COMPATIBLE)
   # =========================
   passbolt_db:
-    image: postgres:18
+    image: mariadb:10.11
     container_name: passbolt_db
     restart: always
 
     environment:
-      POSTGRES_USER: passbolt
-      POSTGRES_PASSWORD: passboltpass
-      POSTGRES_DB: passbolt
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: passbolt
+      MYSQL_USER: passbolt
+      MYSQL_PASSWORD: passboltpass
 
     volumes:
-      - passbolt_data:/var/lib/postgresql/data
+      - passbolt_data:/var/lib/mysql
 
     networks:
       - app_network
@@ -55,17 +59,16 @@ services:
       - passbolt_db
 
     ports:
-      - "8080:80"
+      - "9797:80"
 
     environment:
-      APP_FULL_BASE_URL: http://localhost:8080
-
-      DATASOURCES_DEFAULT_DRIVER: Cake\Database\Driver\Postgres
+      APP_FULL_BASE_URL: http://localhost:9797
 
       DATASOURCES_DEFAULT_HOST: passbolt_db
       DATASOURCES_DEFAULT_USERNAME: passbolt
       DATASOURCES_DEFAULT_PASSWORD: passboltpass
       DATASOURCES_DEFAULT_DATABASE: passbolt
+      DATASOURCES_DEFAULT_DRIVER: Cake\Database\Driver\Mysql
 
     networks:
       - app_network
