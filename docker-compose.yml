@@ -1,7 +1,6 @@
 services:
-
   # =========================
-  # BASE DE DATOS
+  # BASE DE DATOS APP
   # =========================
   db:
     image: postgres:18
@@ -17,7 +16,7 @@ services:
       - "5432:5432"
 
     volumes:
-      - postgres_data:/var/lib/postgresql
+      - postgres_data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
 
     networks:
@@ -38,7 +37,7 @@ services:
       POSTGRES_DB: passbolt
 
     volumes:
-      - passbolt_data:/var/lib/postgresql
+      - passbolt_data:/var/lib/postgresql/data
 
     networks:
       - app_network
@@ -60,6 +59,8 @@ services:
 
     environment:
       APP_FULL_BASE_URL: http://localhost:8080
+
+      DATASOURCES_DEFAULT_DRIVER: Cake\Database\Driver\Postgres
 
       DATASOURCES_DEFAULT_HOST: passbolt_db
       DATASOURCES_DEFAULT_USERNAME: passbolt
